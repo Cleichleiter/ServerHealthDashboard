@@ -1,0 +1,33 @@
+name: Generate Server Health Report
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"  # every day at 2 AM UTC
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        uses: PowerShell/setup-pwsh@v2
+
+      - name: Run Server Health script
+        shell: pwsh
+        run: |
+          mkdir Output -Force
+          pwsh .\Scripts\ServerHealth.ps1 -Verbose
+          dir Output
+
+      - name: Upload reports as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ServerHealthReports
+          path: Output/

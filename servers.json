@@ -1,0 +1,5 @@
+{
+  "Servers": ["localhost"],
+  "ServicesToCheck": ["Spooler","LanmanServer"],
+  "ReportTitle": "Server Health Report"
+}

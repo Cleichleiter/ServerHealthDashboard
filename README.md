@@ -4,7 +4,7 @@
 
 # 
 
-# ✅ SSH verified from C:\\Repos setup.
+# SSH verified from C:\\Repos setup.
 
 
 

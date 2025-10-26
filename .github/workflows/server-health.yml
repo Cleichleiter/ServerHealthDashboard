@@ -1,33 +1,43 @@
 name: Generate Server Health Report
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * *"  # every day at 2 AM UTC
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Setup PowerShell
-        uses: PowerShell/setup-pwsh@v2
+    - name: Setup PowerShell
+      uses: actions/setup-pwsh@v4
 
-      - name: Run Server Health script
-        shell: pwsh
-        run: |
-          mkdir Output -Force
-          pwsh .\Scripts\ServerHealth.ps1 -Verbose
-          dir Output
+    - name: Run Server Health script
+      shell: pwsh
+      run: |
+        Write-Host "Running Server Health Report..."
+        $scriptPath = ".\Scripts\ServerHealth.ps1"
+        if (Test-Path $scriptPath) {
+          pwsh -File $scriptPath -Verbose
+        } else {
+          Write-Error "ServerHealth.ps1 not found at $scriptPath"
+          exit 1
+        }
 
-      - name: Upload reports as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ServerHealthReports
-          path: Output/
+    - name: Archive generated reports
+      if: always()
+      run: |
+        if (Test-Path ".\Output") {
+          Compress-Archive -Path ".\Output\*" -DestinationPath "ServerHealthReports.zip" -Force
+        } else {
+          Write-Host "No output folder found; skipping archive."
+        }
+
+    - name: Upload report artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ServerHealthReports
+        path: ServerHealthReports.zip
